@@ -58,3 +58,5 @@ anova.1 <-
 fit.2 <- lm(FGt~Name+FGtM1,data = d)
 test <- fit.2$coef[["FGtM1"]]
 
+
+
