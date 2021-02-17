@@ -36,6 +36,16 @@ detach(kicker)
 circulation <- read.table("Data/circulation.txt", header=TRUE, sep="\t")
 attach(circulation)
 
+#Dimensions in data:
+circ_dim <- 
+  dim(circulation)
+
+names(circulation)
+
+#how many zeros and ones on the dummy
+  #using the table command
+table(circulation$Tabloid.with.a.Serious.Competitor)
+
 #Figure 1.3 on page 5
 plot(Weekday,Sunday,xlab="Weekday Circulation",ylab="Sunday Circulation",
 pch=Tabloid.with.a.Serious.Competitor+1,col=Tabloid.with.a.Serious.Competitor+1)
@@ -52,7 +62,7 @@ title="Tabloid dummy variable")
 detach(circulation)
 
 
-nyc <- read.csv("nyc.csv",header=TRUE)
+nyc <- read.csv("Data/nyc.csv",header=TRUE)
 attach(nyc)
 
 #Figure 1.5 on page 7
