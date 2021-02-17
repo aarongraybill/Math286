@@ -1,9 +1,6 @@
 #March 17, 2009
 
-#Please change the file path in the command below to coincide with where you have stored the data files
-setwd("C:/Users/sheather.ADSTAT/Documents/docs/AModernApproachToRegression/Data")
-
-production <- read.table("production.txt",header=TRUE)
+production <- read.table("Data/production.txt",header=TRUE)
 attach(production)
 
 #Figure 2.1 on page 16
@@ -34,7 +31,7 @@ anova(m1)
 detach(production)
 
 
-changeover_times <- read.table("changeover_times.txt",header=TRUE)
+changeover_times <- read.table("Data/changeover_times.txt",header=TRUE)
 attach(changeover_times)
 
 #R output on page 31
@@ -58,7 +55,7 @@ detach(changeover_times)
 
 #Exercise 2.8.1
 
-playbill <- read.csv("C:playbill.csv",header=TRUE)
+playbill <- read.csv("Data/playbill.csv",header=TRUE)
 attach(playbill)
 
 #Figure 2.6 on page 38

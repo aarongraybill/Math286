@@ -36,6 +36,16 @@ detach(kicker)
 circulation <- read.table("Data/circulation.txt", header=TRUE, sep="\t")
 attach(circulation)
 
+#Dimensions in data:
+circ_dim <- 
+  dim(circulation)
+
+names(circulation)
+
+#how many zeros and ones on the dummy
+  #using the table command
+table(circulation$Tabloid.with.a.Serious.Competitor)
+
 #Figure 1.3 on page 5
 plot(Weekday,Sunday,xlab="Weekday Circulation",ylab="Sunday Circulation",
 pch=Tabloid.with.a.Serious.Competitor+1,col=Tabloid.with.a.Serious.Competitor+1)
@@ -49,15 +59,47 @@ col=Tabloid.with.a.Serious.Competitor+1)
 legend(11.6, 14.1,legend=c("0","1"),pch=1:2,col=1:2,
 title="Tabloid dummy variable")
 
+#Compare Sunday circulation to Weekday circ
+sumstats <- 
+  list(list(mean(Weekday),median(Weekday),sd(Weekday)),list(mean(Sunday),median(Sunday),sd(Sunday)))
+boxplot(Weekday,Sunday,names=c("Weekday","Sunday"))
+
+t.test(Sunday,Weekday,alternative = 'greater',paired = TRUE)
+
 detach(circulation)
 
 
-nyc <- read.csv("nyc.csv",header=TRUE)
+nyc <- read.csv("Data/nyc.csv",header=TRUE)
 attach(nyc)
 
 #Figure 1.5 on page 7
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
 pairs(Price~Food+Decor+Service,data=nyc,gap=0.4,
-cex.labels=1.5)
+cex.labels=1.5,diag.panel = panel.hist)
+
+library(dplyr)
+
+e_price <- 
+  nyc$Price[East==1]
+ne_price <- 
+  nyc$Price[East==0]
+summary(nyc$Price[East==1])
+summary(nyc$Price[East==0])
+
+boxplot(e_price,ne_price,names=c('east','not east'))
+boxplot(nyc$Price~nyc$Decor)
+
+
+t.test(e_price,ne_price)
+
 
 #Figure 1.6 on page 10
 boxplot(Price~East,ylab="Price",
