@@ -1,4 +1,15 @@
 #March 17, 2009
+library(dplyr)
+library(tidyr)
+
+grad <- read.csv("Data/GRADRATE2.csv")
+plot(grad$AS94,grad$AS95)
+grad_long <-
+  grad %>% 
+  pivot_longer(-Name.of.School)
+lm()
+
+
 
 production <- read.table("Data/production.txt",header=TRUE)
 attach(production)
