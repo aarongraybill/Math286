@@ -1,5 +1,4 @@
 # Math286
 A Housing For Math286 input and output files
 
-Look we can do some basic LaTeX:
-$x=i\in[0,1]$
+To use this repository, pull the repo, open the .proj files, and all of the files that i've edited should work on your client.
