@@ -6,9 +6,15 @@ grad <- read.csv("Data/GRADRATE2.csv")
 plot(grad$AS94,grad$AS95)
 grad_long <-
   grad %>% 
-  pivot_longer(-Name.of.School)
-lm()
+  pivot_longer(-Name.of.School)#%>% 
+  #mutate(name=stringr::str_trunc(name,2,'right',ellipsis = ''))
 
+b <- 
+  lm(grad$AS95~grad$AS94)
+
+plot(grad$AS94,grad$AS95):abline(b,col='red')
+#compute confit
+confint(b,"AS94",level=.9)
 
 
 production <- read.table("Data/production.txt",header=TRUE)
