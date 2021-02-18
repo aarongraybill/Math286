@@ -1,0 +1,87 @@
+---
+title: "ProblemSet1"
+subtitle: "Math 286"
+author: "Aaron Graybill"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+source(here("R-scripts","ggplotTheme copy.R"))
+```
+
+## Data Description:
+In following section I read in the data and find its dimension:
+```{r data read and describe}
+df <- 
+  read.csv(here("Data","Bordeaux.csv"))
+df_dims <- 
+  dim(df)
+```
+
+Using the above computation, there are `r df_dims[1]` observations, and `r df_dims[2]` variables.
+
+## Statistical Analysis
+First I will visualize the distribution of prices of wines with Parker scores below $95$ and above $95$ respectively.
+```{r plot relationship}
+df <- 
+  df %>% 
+  mutate(high_parker=case_when(
+    ParkerPoints>=95~TRUE,
+    TRUE~FALSE
+  ))
+ggplot(df,aes(x=high_parker,y=Price,col=high_parker))+
+  geom_boxplot()+
+  ggtitle("Prices of Wines with Parker Scores\nAbove and Below 95 ")+
+  theme_custom()
+```
+The large outliers make it hard to see that relationship in detail, for completeness, let's look at the distribution of log prices:
+
+``` {r plot log relationship}
+ggplot(df,aes(x=high_parker,y=log(Price),col=high_parker))+
+  geom_violin()+
+  ggtitle("Log Prices of Wines with Parker\nScores Above and Below 95 ")+
+  theme_custom()
+```
+
+I mostly included that because the density plot of log price looks like a wine bottle for high-Parker-score wines!
+
+That digression aside, the graphs seem to indicate that wines with high Parker scores are generally more expensive. Let's see if we can back that with some summary statistics:
+
+```{r compute summary statistics,message=F}
+df %>%
+  group_by(high_parker) %>%
+  summarise(Min.=min(Price),
+            `1st Qu.`=quantile(Price)[2],
+            Median=quantile(Price)[3],
+            Mean=mean(Price),
+            `3rd Qu.`=quantile(Price)[4],
+            Max.=max(Price),
+            `sd`=sd(Price)
+            ) %>% 
+  knitr::kable()
+```
+
+So the measures of central tendency seem to indicate the wines with high Parker scores also have higher prices. That being said, the standard deviation of the wines with high Parker scores are quite high, so we should run a $t$-test to ensure that the difference in means is significance.
+
+```{r run t-test}
+high_parker <- 
+  df %>% 
+  filter(high_parker==T) %>% 
+  pull(Price)
+low_parker <- 
+  df %>% 
+  filter(high_parker==F) %>% 
+  pull(Price)
+#un-paired two sided t-test
+test <- t.test(high_parker,low_parker)
+test
+```
+
+The above results show that the $p$-value from the test is $p=`r format(round(test$p.value,4),scientific=F)`$. This is less than the stated threshold of $p^*=0.005$. We can interpret these results in the following way. The $t$-test concluded that there is a significant difference between the mean prices of wines with a Parker score $\geq 95$ than those wines with scores $<95$. 
