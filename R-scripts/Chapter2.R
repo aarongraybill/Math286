@@ -12,9 +12,46 @@ grad_long <-
 b <- 
   lm(grad$AS95~grad$AS94)
 
+
+##Manually COmpute confit
+.93-qt(.95,df=251)*0.013
+
 plot(grad$AS94,grad$AS95):abline(b,col='red')
+
+
+#Exercise, do it:
+a <- 
+  read.csv('Data/COMNODE3.csv')
+
+out <- 
+  lm(COST~NUMPORTS,a)
+
+summary(out)
+confint(out,level = .95)
+
+# We have strong evidence that the variables are linearly related
+  # the p-value is 4.88e-07 which is less than the 5% level
+  # Strong evidence that as numports increases price increases
+
+# We have strong evidence of a positive linear relation because we take the p-value and 
+  # divide by two giving 1e-8
+
+#does each port add at least 1000:
+1-pt((650-1000)/66.91,12)
+
+plot(a$NUMPORTS,a$COST)
+
+
+
+
+
+
+
+
 #compute confit
-confint(b,"AS94",level=.9)
+confint(b,level=.9)
+
+
 
 
 production <- read.table("Data/production.txt",header=TRUE)
