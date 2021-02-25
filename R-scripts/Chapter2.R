@@ -41,18 +41,47 @@ confint(out,level = .95)
 
 plot(a$NUMPORTS,a$COST)
 
+confint(out,1,level=.9)
 
 
+a <- 
+  read.csv('Data/GRADRATE2.csv')
+
+out1 <- 
+  lm(AS95~AS94,a)
+
+confinit <- function(out1,x,alpha)
 
 
+new=data.frame(AS94=c(50:60))
+#confint
+predict(out1,new,interval = 'confidence',level=.95,se.fit=T)
+#prediction int
+predict(out1,new,interval = 'prediction',level=.95,se.fit=T)
 
+x <- seq(0,6,.01)
+y <- pf(x,10,10)
+plot(x,y,type="l")
 
 
 #compute confit
 confint(b,level=.9)
 
 
+a <- 
+  read.csv('Data/GRADRATE2.csv')
+out1 <- 
+  lm(AS95~AS94+AS93,a)
 
+a <- read.csv('Data/COMNODE3.csv')
+out2 <- 
+  lm(COST~NUMPORTS,data=a)
+anova(out2)
+
+b <- 
+  read.csv("data/HeightWeight.csv")
+
+out3 <- lm(Weight~Female+0,data=b)
 
 production <- read.table("Data/production.txt",header=TRUE)
 attach(production)
