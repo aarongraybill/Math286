@@ -1,0 +1,92 @@
+---
+title: "ProblemSet2"
+author: "Aaron Graybill"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: yes
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+source(here("R-scripts","ggplotTheme copy.R"))
+```
+
+## Problem 2.1
+
+```{r 2.1 data pull}
+df <- 
+  read.csv(here('Data',"playbill.csv"))
+movie_lm <- 
+  lm(CurrentWeek~LastWeek,data=df)
+summary(movie_lm)
+```
+
+### 2.1.a
+We can find the 95% confidence interval on the $\hat{\beta}_1$ term with the following code:
+```{r 2.1.a}
+confint_2.1 <- 
+  confint(movie_lm)
+```
+
+The confidence interval around $\hat{\beta}_1$ is $(`r confint_2.1[2,]`)$ which actually contains $1$, so we do not have significant evidence that the true $\beta_1\neq1$. We can compute this test a different way. We can run a hypothesis test where $H_0\colon \beta_1=1$ and $H_a\colon \beta_1\neq1$. We showed in class that:
+$$
+\frac{\hat{\beta}_1-1}{se(\hat{\beta}_1)}\sim t_{n-2}
+$$
+We have all of these values from our regression output, so we can compute the $p$-value that the null hypothesis is true in the following way:
+
+```{r 2.1.b 1}
+test_stat=(movie_lm[["coefficients"]][["LastWeek"]]-1)/coef(summary(movie_lm))[, "Std. Error"]["LastWeek"]
+
+critical_region <- 
+  qt(c(.025,.975),movie_lm$df.residual)
+
+p_val <- (pt(test_stat,movie_lm$df.residual)*2)
+  
+```
+
+The 95% critical region, as computed is $(-\infty,-2.12)\cup(2.12,\infty)$, and our test statistic is equal to $`r test_stat`$ is not in that region, so we have insufficient evidence to reject the null hypothesis that $\beta_1=1$ at the 95% level. In fact, the $p$-value from this test is $`r p_val`$ which is well above the required $.05$ at the 95% level.
+
+### 2.1.b
+
+As proven in class:
+$$
+\frac{\hat{\beta}_0-\beta_0^0}{se(\hat{\beta}_0)}\sim t_{n-2}
+$$
+In this case our $H_0$ is $\beta_0=1000$ and $H_a$ is $\beta_0\neq1000$. Implementing similar code to above gives:
+
+```{r 2.1.b 2}
+test_stat=(movie_lm[["coefficients"]][["(Intercept)"]]-1000)/coef(summary(movie_lm))[, "Std. Error"]["(Intercept)"]
+
+critical_region <- 
+  qt(c(.025,.975),movie_lm$df.residual)
+
+p_val <- (pt(-abs(test_stat),movie_lm$df.residual)*2)
+```
+
+I have to do some business with `-abs(test_stat)` to ensure that when I compute the cumulative density it's in the left tail so the $p$-value is just two times the computed density. Anyway, computing the $p$-value gives: `r p_val` which is quite high and provides very little evidence that the true $\beta_0\neq1000$. In fact since $p>.5$, there is more evidence that $H_0$ is true than the alternative.
+
+### 2.1.c
+We showed in class that the prediction interval is given by:
+$$
+\hat{\beta}_0+\hat{\beta}_1x^*\pm t_{\frac{\alpha}{2},n-2}S\sqrt{\frac{1}{n}+\frac{x^*-\overline{x}}{SXX}}
+$$
+But thankfully `R`will take care of that for us with the following code:
+```{r 2.1.c}
+prediction_points <- 
+  data.frame(LastWeek=400000)
+prediction <- 
+  predict(movie_lm,prediction_points,interval = 'prediction',level=.95,se.fit=T)
+prediction
+```
+Summarizing those results, the point estimate for `CurrentWeek` is $\$`r prediction[['fit']][1] %>% format(scientific=F)`$ with a 95% prediction interval of: $(`r prediction[['fit']][2] %>% format(scientific=F)`,`r prediction[['fit']][3] %>% format(scientific=F)`)$. So we are 95% percent certain the true value of $y^*$ would lie in the aforementioned range.
+
+## Problem 2.2
+
