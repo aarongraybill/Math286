@@ -11,7 +11,7 @@
 
 <meta name="author" content="Aaron Graybill" />
 
-<meta name="date" content="2021-02-28" />
+<meta name="date" content="2021-03-02" />
 
 <title>ProblemSet2</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">ProblemSet2</h1>
 <h4 class="author">Aaron Graybill</h4>
-<h4 class="date">2021-02-28</h4>
+<h4 class="date">2021-03-02</h4>
 
 </div>
 
@@ -375,8 +375,16 @@ summary {
 <li><a href="#a">2.1.a</a></li>
 <li><a href="#b">2.1.b</a></li>
 <li><a href="#c">2.1.c</a></li>
+<li><a href="#d">2.1.d</a></li>
 </ul></li>
-<li><a href="#problem-2.2">Problem 2.2</a></li>
+<li><a href="#problem-2.2">Problem 2.2</a><ul>
+<li><a href="#a-1">2.2.a</a></li>
+<li><a href="#b-1">2.2.b</a></li>
+</ul></li>
+<li><a href="#problem-2.4">Problem 2.4</a><ul>
+<li><a href="#a-2">2.4.a</a></li>
+<li><a href="#b-2">2.4.b</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -458,9 +466,126 @@ prediction</code></pre>
 ## [1] 18007.56</code></pre>
 <p>Summarizing those results, the point estimate for <code>CurrentWeek</code> is <span class="math inline">\(\$399637.5\)</span> with a 95% prediction interval of: <span class="math inline">\((359832.8,439442.2)\)</span>. So we are 95% percent certain the true value of <span class="math inline">\(y^*\)</span> would lie in the aforementioned range.</p>
 </div>
+<div id="d" class="section level3">
+<h3>2.1.d</h3>
+<p>This heuristic is more or less appropriate. The regression coefficient is <span class="math inline">\(\hat{\beta}_1=0.9820815\)</span> which says that sales next week will be approximately 98% what they were last week which is quite close to exactly what they were last week. That 2% difference might not be a problem for some, but the true estimate is not exactly one. In fact, we could not conclusively show that the <span class="math inline">\(\beta_1\)</span> was different from 1, the <span class="math inline">\(p\)</span>-value on that test was <span class="math inline">\(.23\)</span>, not significant evidence to the contrary.</p>
+</div>
 </div>
 <div id="problem-2.2" class="section level2">
 <h2>Problem 2.2</h2>
+<pre class="r"><code>df &lt;- 
+  read.delim(here(&#39;Data&#39;,&quot;indicators.txt&quot;),sep = &#39;\t&#39;)</code></pre>
+<div id="a-1" class="section level3">
+<h3>2.2.a</h3>
+<p>I create the linear model and the confidence in the following way:</p>
+<pre class="r"><code>econ_lm &lt;- 
+  lm(PriceChange~LoanPaymentsOverdue,data=df)
+summary(econ_lm)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = PriceChange ~ LoanPaymentsOverdue, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.6541 -3.3419 -0.6944  2.5288  6.9163 
+## 
+## Coefficients:
+##                     Estimate Std. Error t value Pr(&gt;|t|)  
+## (Intercept)           4.5145     3.3240   1.358   0.1933  
+## LoanPaymentsOverdue  -2.2485     0.9033  -2.489   0.0242 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 3.954 on 16 degrees of freedom
+## Multiple R-squared:  0.2792, Adjusted R-squared:  0.2341 
+## F-statistic: 6.196 on 1 and 16 DF,  p-value: 0.02419</code></pre>
+<pre class="r"><code>confint(econ_lm)</code></pre>
+<pre><code>##                         2.5 %     97.5 %
+## (Intercept)         -2.532112 11.5611000
+## LoanPaymentsOverdue -4.163454 -0.3335853</code></pre>
+<p>The 95% confidence interval on the <span class="math inline">\(\hat{\beta}_1\)</span> does not contain any positive values so we can be confident that the true slope, <span class="math inline">\(\beta_1\)</span>, also is not positive. We could also run a hypothesis test to the same effect. Interpreting this, we can be reasonably certain that an increase in overdue loan payments is associated with a decrease in prices.</p>
+</div>
+<div id="b-1" class="section level3">
+<h3>2.2.b</h3>
+<p>Here we are not doing a prediction interval, we are doing a confidence interval on the expected value of <span class="math inline">\(Y\)</span> given <span class="math inline">\(x=4\)</span>. We implement that in the following way:</p>
+<pre class="r"><code>data &lt;- data.frame(LoanPaymentsOverdue=4)
+predict(econ_lm,data,interval = &#39;confidence&#39;,se.fit=T,level = .95)</code></pre>
+<pre><code>## $fit
+##         fit       lwr       upr
+## 1 -4.479585 -6.648849 -2.310322
+## 
+## $se.fit
+## [1] 1.023283
+## 
+## $df
+## [1] 16
+## 
+## $residual.scale
+## [1] 3.953998</code></pre>
+<p>The expected value of change in prices is <span class="math inline">\(-4.48\%\)</span> when <span class="math inline">\(x=4\)</span> which is the percentage of loans overdue. The confidence interval does not include zero, so we can be reasonably sure that the expected value of price change is not zero.</p>
+</div>
+</div>
+<div id="problem-2.4" class="section level2">
+<h2>Problem 2.4</h2>
+<div id="a-2" class="section level3">
+<h3>2.4.a</h3>
+<p>We wish to minimize the square residuals and solve for the <span class="math inline">\(\hat{\beta}\)</span> that does so.</p>
+<p>The sum of the square residuals are <span class="math inline">\(\sum_i^n\left(y_i-\hat{y}_i\right)^2\)</span>. And our model is of the form: <span class="math inline">\(\hat{y}_i=\hat{\beta}x_i\)</span> so we have:</p>
+<p><span class="math display">\[
+\arg\min_{\hat{\beta}}\left\{\sum_i^n\left(y_i-\hat{\beta}x_i\right)^2 \right\}
+\]</span></p>
+<p>The first order condition would then be:</p>
+<p><span class="math display">\[
+\sum_i^n2\left(y_i-\hat{\beta}x_i\right)x_i=0
+\]</span></p>
+<p>Doing some algebraic manipulations gives: <span class="math display">\[
+\begin{align}
+\sum_i^n2\left(y_i-\hat{\beta}x_i\right)x_i&amp;=0\\
+2\sum_i^n x_iy_i-\hat{\beta}x_i^2&amp;=0\\
+\sum_i^n x_iy_i-\hat{\beta}x_i^2&amp;=0 \\
+\sum_i^n x_iy_i-\sum_i^n\hat{\beta}x_i^2&amp;=0\\
+\sum_i^n x_iy_i-\hat{\beta}\sum_i^nx_i^2&amp;=0\\
+\sum_i^n x_iy_i&amp;=\hat{\beta}\sum_i^nx_i^2\\
+\frac{\sum_i^n x_iy_i}{\sum_i^nx_i^2}&amp;=\hat{\beta}\\
+\end{align}
+\]</span></p>
+</div>
+<div id="b-2" class="section level3">
+<h3>2.4.b</h3>
+<div id="i." class="section level4">
+<h4>i.</h4>
+<p><span class="math display">\[
+\begin{align}
+E[\hat{\beta}|X=x_i]&amp;=\\
+&amp;=E\left[\frac{\sum_i^n x_iy_i}{\sum_i^nx_i^2}|X=x_i\right]\\
+&amp;=\frac{E\left[\sum_i^n x_iy_i|X=x_i\right]}{E\left[\sum_i^nx_i^2|X=x_i\right]}\\
+&amp;=\frac{\sum_i^n x_iE\left[y_i|X=x_i\right]}{\sum_i^nx_i^2} \text{(conditioning on}\ x)\\
+&amp;=\frac{\sum_i^n x_i\beta x_i}{\sum_i^nx_i^2} \text{(by assumption)}\\
+&amp;=\beta\frac{\sum_i^n x_i^2}{\sum_i^nx_i^2}\\
+&amp;=\beta
+\end{align}
+\]</span></p>
+</div>
+<div id="ii." class="section level4">
+<h4>ii.</h4>
+<p><span class="math display">\[
+\begin{align}
+Var[\hat{\beta}|X=x_i]&amp;=\\
+&amp;=Var\left[\frac{\sum_i^n x_iy_i}{\sum_i^nx_i^2}|X=x_i\right]\\
+&amp;=\frac{1}{\left(\sum_i^nx_i^2\right)^2}Var(\sum_i^n x_iy_i|X=x_i)\quad \text{(conditioning on} \ x)\\
+&amp;=\frac{1}{\left(\sum_i^nx_i^2\right)^2}\sum_i^n x_i^2 Var(y_i|X=x_i) \quad \mathbf{1.}\\
+&amp;=\frac{1}{\left(\sum_i^nx_i^2\right)^2}\sum_i^n x_i^2 Var(\beta x_i+e_i|X=x_i)\quad  \text{(modelling assumption)}\\
+&amp;=\frac{1}{\left(\sum_i^nx_i^2\right)^2}\sum_i^n x_i^2 \sigma^2 \quad \mathbf{2.}\\
+&amp;=\frac{\sigma^2\sum_i^nx_i^2}{\left(\sum_i^nx_i^2\right)^2}\\
+&amp;=\frac{\sigma^2}{\sum_i^nx_i^2}
+\end{align}
+\]</span> The <span class="math inline">\(\mathbf{1.}\)</span> step uses the conditioning on <span class="math inline">\(X=x_i\)</span> and the fact that the <span class="math inline">\(Y_i\)</span>s are independent. Step <span class="math inline">\(\mathbf{2.}\)</span> uses the conditioning on <span class="math inline">\(x\)</span> coupled with the fact that we then only have a location shift so the variance is unchanged and finally the modeling assumption that <span class="math inline">\(Var(e_i|X=x_i)=\sigma^2\)</span>.</p>
+</div>
+<div id="iii." class="section level4">
+<h4>iii.</h4>
+<p>We have already shown that the mean and variance of <span class="math inline">\(\hat{\beta}\)</span> are as desired, now just to prove normality. As shown <span class="math inline">\(\hat{\beta}=\frac{\sum x_iy_i}{\sum x_i^2}\)</span>. Conditioning on <span class="math inline">\(X\)</span> means the denominator is a constant. Furthermore, Conditioning on <span class="math inline">\(X\)</span> means that the numerator is the weighted sum of a series of normal distribution (because <span class="math inline">\(y|X\sim N\)</span>). Since all of the <span class="math inline">\(y_i\)</span>s are uncorrelated (and independent) by assumption, this weighted sum of normals must remain a normal distribution. Therefore, we have a normal distribution divided by a constant which itself must be a normal. Therefore, we have proven that <span class="math inline">\(\hat{\beta}\)</span> is distributed normally and since we already know its two parameters, we can fully characterize the distribution of <span class="math inline">\(\hat{\beta}\)</span> as <span class="math inline">\(\hat{\beta}\sim N\left(\beta,\frac{\sigma^2}{\sum_i^nx_i^2}\right)\)</span>.</p>
+</div>
+</div>
 </div>
 
 
