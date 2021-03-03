@@ -131,14 +131,14 @@ $$
 The first order condition would then be:
 
 $$
-\sum_i^n2\left(y_i-\hat{\beta}x_i\right)x_i=0
+\sum_i^n-2\left(y_i-\hat{\beta}x_i\right)x_i=0
 $$
-
+Before solving for $\hat{\beta}$, let's take another derivative, giving $\sum x_i^2$ which is greater than or equal to zero, so when we solve for $0$ in the first order condition, we can be sure we are finding a minimum
 Doing some algebraic manipulations gives:
 
 \begin{align*}
-\sum_i^n2\left(y_i-\hat{\beta}x_i\right)x_i&=0\\
-2\sum_i^n x_iy_i-\hat{\beta}x_i^2&=0\\
+\sum_i^n-2\left(y_i-\hat{\beta}x_i\right)x_i&=0\\
+-2\sum_i^n x_iy_i-\hat{\beta}x_i^2&=0\\
 \sum_i^n x_iy_i-\hat{\beta}x_i^2&=0 \\
 \sum_i^n x_iy_i-\sum_i^n\hat{\beta}x_i^2&=0\\
 \sum_i^n x_iy_i-\hat{\beta}\sum_i^nx_i^2&=0\\
