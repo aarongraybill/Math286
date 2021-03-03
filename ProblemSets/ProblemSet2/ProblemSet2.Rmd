@@ -146,7 +146,7 @@ Doing some algebraic manipulations gives:
 \frac{\sum_i^n x_iy_i}{\sum_i^nx_i^2}&=\hat{\beta}\\
 \end{align*}
 
-
+We know that the function has attained a minimum and not a maximum because the function is convex as it is only the sum of squares.
 ### 2.4.b
 
 #### i.
