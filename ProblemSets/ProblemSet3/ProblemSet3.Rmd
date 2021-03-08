@@ -1,0 +1,36 @@
+---
+title: "ProblemSet3"
+author: "Aaron Graybill"
+date: "3/8/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 2.6
+
+### a.
+
+$$
+y_i-\hat{y}_i=y_i-\hat{\beta}_0+\hat{\beta}_1x_i=y_i-\overline{y}-\hat{\beta}_1\overline{x}+\hat{\beta}_1 x_i=(y_i-\overline{y})-\hat{\beta}_1(x_i-\overline{x})
+$$
+
+### b.
+
+$$
+\hat{y}_i-\overline{y}=\hat{\beta}_0+\hat{\beta}_1x_i-\overline{y}=\overline{y}-\hat{\beta}_1\overline{x}+\hat{\beta}_1x_i-\overline{y}=\hat{\beta}_1(x_i-\overline{x})
+$$
+
+### c.
+$$
+\begin{align*}
+&\sum_{i=1}^n\left(\hat{y}_i-\overline{y}\right)\left(y_i-\hat{y}_i\right)\\
+&\sum_{i=1}^n\left((y_i-\overline{y})-\hat{\beta}_1(x_i-\overline{x})\right)\left(\hat{\beta}_1(x_i-\overline{x})\right)\\
+&\sum_{i=1}^n(y_i-\overline{y})\hat{\beta}_1(x_i-\overline{x})-\hat{\beta}_1^2(x_i-\overline{x})^2\\
+&\hat{\beta}_1SXY-\hat{\beta}_1^2SXX\\
+&\frac{SXY}{SXX}SXY-\left(\frac{SXY}{SXX}\right)^2SXX\\
+&\frac{SXY^2-SXY^2}{SXX}=0
+\end{align*}
+$$

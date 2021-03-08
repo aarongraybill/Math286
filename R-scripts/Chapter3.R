@@ -76,8 +76,9 @@ points(x,YBad)
 detach(huber)
 
 
-bonds <- read.table("bonds.txt",header=TRUE)
+bonds <- read.table("Data/bonds.txt",header=TRUE)
 attach(bonds)
+
 
 #Figure 3.9 on page 63
 par(mfrow=c(1,1))
@@ -88,8 +89,22 @@ abline(lsfit(CouponRate,BidPrice))
 m1 <- lm(BidPrice~CouponRate)
 summary(m1)
 
+
 #95% confidence intervals on page 63
 round(confint(m1,level=0.95),3)
+
+bonds2 <- bonds[-c(4,13,35),]
+
+par(mfrow=c(1,1))
+plot(bonds2$CouponRate,bonds2$BidPrice,xlab="Coupon Rate (%)", ylab="Bid Price ($)",ylim=c(85,120),xlim=c(2,14))
+abline(lsfit(bonds2$CouponRate,bonds2$BidPrice))
+
+#Regression output on page 63 
+m2 <- lm(BidPrice~CouponRate,data=bonds2)
+summary(m2)
+
+
+
 
 #Table 3.4 on page 62
 leverage1 <- hatvalues(m1)
