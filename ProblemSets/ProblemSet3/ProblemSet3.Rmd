@@ -24,7 +24,7 @@ $$
 $$
 
 ### c.
-$$
+
 \begin{align*}
 &\sum_{i=1}^n\left(\hat{y}_i-\overline{y}\right)\left(y_i-\hat{y}_i\right)\\
 &\sum_{i=1}^n\left((y_i-\overline{y})-\hat{\beta}_1(x_i-\overline{x})\right)\left(\hat{\beta}_1(x_i-\overline{x})\right)\\
@@ -33,4 +33,180 @@ $$
 &\frac{SXY}{SXX}SXY-\left(\frac{SXY}{SXX}\right)^2SXX\\
 &\frac{SXY^2-SXY^2}{SXX}=0
 \end{align*}
-$$
+
+
+## Simultaneous Example Problem 1
+```{r Data setup, message=F}
+rm(list=ls())
+library(here)
+
+d <- 
+  read.csv(here("data","Toluca.csv"))
+```
+
+### a.
+\textbf{I say cost a lot in this question when I mean hours. I realized this during the last part, and I don't have enough time this week to change it, but I at least wanted to recognize the error made.}
+
+The following code plots the Hours against the Size
+``` {r s.1.a}
+plot(d$Size,d$Hours)
+```
+By the plot above a linear model seems okay, although the variance of the errors might be quite high.
+
+### b.
+We can find the regression line with the following code:
+```{r s.1.b}
+out <- lm(Hours~Size,data=d);summary(out)
+```
+### c.
+I compute the confidence intervals in the following way:
+``` {r s.1.c}
+confint(out,"Size",level=.95)
+confint(out,"Size",level=.9)
+```
+Both confidence intervals are strictly positive, so we expect a positive relationship between the `Size` of the batch and the `Cost` thereof.
+
+### d. 
+However, I find the probability that we observe the data we do given that the slope was actually zero in the following way. I need not actually compute it because the summary output of the regression model has the $p$-value for a two side test at zero, so simply dividing this by two would give the $p$-value of the one-tail positive test. The reported $p$-value is $4.5\times 10^{-10}$, so dividing this by two gives: $2.3\times 10^{-10}$. This is a very small $p$-value, so we can be rather certain that there is a positive relationship.
+
+
+### e. & f.
+We can compute both of these confidence intervals in the following way:
+```{r s.1.ef}
+prediction_points <- 
+  data.frame(Size=c(65,100))
+predict(out,prediction_points,interval = 'confidence',se.fit=T,level = .9)
+```
+I suppose I should briefly interpret these results. When there are $65$ size units, we are $90\%$ certain that the mean value of cost is between $\$277.43$ and $\$311.43$. Similarly, when the lot is of size $100$, we are $90\%$ confident that the mean cost is between $\$419.39$ and $\$443.85$.
+
+### g.
+This question is asking for a prediction interval at 100 units, we can implement that as such:
+```{r s.1.g}
+prediction_points <- 
+  data.frame(Size=c(100))
+predict(out,prediction_points,interval = 'prediction',se.fit=T,level = .9)
+```
+Given a lot of size 100 units, we can be $90\%$ confident that the corresponding cost of the lot is between $\$332.21$ and $\$506.56$.
+
+### h. 
+This question is asking about the $R$ squared, so reading off of the summary table gives that $82.15\%$ of the variation in cost can be explained by the intercept and the variation in `Size`.
+```{r s.1.h}
+summary(out)
+```
+### i.
+The Bonferroni method says that if we wish to have a joint confidence level of $\alpha_j=.1$, we need to have individual confidence levels (2) at $\alpha_i=\frac{\alpha_j}{2}=.05$. Therefore we need to compute a $90\%$ confidence interval. That gives:
+
+```{r }
+confint(out,level = 1-.1/2)
+```
+
+
+### j.
+The Working-Hotelling procedure has us compute the $\hat{y}^*$ and its standard error and the $W$ statistic. I do that for $30,65,100$ as follows:
+``` {r}
+data=data.frame(Size=c(30,65,100))
+prediction <- 
+  predict(out,data,interval="confidence",se.fit=T,level=.9)
+
+# Compute prediction interval standard error
+ses <- 
+  # I don't think this is right, i may have to add the square residuals??
+  sqrt(prediction$se.fit^2)
+
+W <- sqrt(2*qf(1-.1,2,23))
+
+data.frame(
+  fit=prediction$fit[,1],
+  up=prediction$fit[,1]+W*ses,
+  low=prediction$fit[,1]-W*ses)
+```
+
+### k. 
+The Bonferonni method is different (that's why it has a different name), we can implement this as follows:
+``` {r s.1.k}
+# the percentile here might not be right. 
+# I have some note saying I don't need the extra 2, but that seems wrong
+t=qt(1-.9/(2*2),23)
+
+se <- #this might not be right
+  sqrt(48.82^2+prediction$se.fit^2)
+
+data.frame(
+  fit=prediction$fit[,1],
+  up=prediction$fit[,1]+t*se,
+  low=prediction$fit[,1]-t*se)
+
+```
+
+### j.
+I think what this question is asking for, though maybe I'm missing something is for us to compare the results of the Scheffé against the Bonferroni, and use the method with the smaller prediction interval.
+
+``` {r s.1.j}
+# Setup:
+data=data.frame(Size=c(80,100))
+prediction <- 
+  predict(out,data,interval="confidence",se.fit=T,level=.95)
+
+# Bonferroni ----
+# the percentile here might not be right. 
+# I have some note saying I don't need the extra 2, but that seems wrong
+t=qt(1-.95/(2*2),23)
+
+se <- #this might not be right
+  sqrt(48.82^2+prediction$se.fit^2)
+
+data.frame(
+  fit=prediction$fit[,1],
+  up=prediction$fit[,1]+t*se,
+  low=prediction$fit[,1]-t*se)
+
+# Scheffé ----
+W=sqrt(2*qf(1-.95,2,23))
+
+se <- #this might not be right
+  sqrt(48.82^2+prediction$se.fit^2)
+
+data.frame(
+  fit=prediction$fit[,1],
+  up=prediction$fit[,1]+W*se,
+  low=prediction$fit[,1]-W*se)
+```
+I'm surprised at how big the differences between these two methods are, but for both estimation points, $80$ and $100$, the Scheffé method produces smaller intervals, so we would select this method to say that the family prediction interval says that we are $95\%$ confident that the true value of hours lies between 331 and 363 and 403 and 436 for 80 and 100 as the size of the batch respectively.
+
+## Simultaneous Example Question 2
+
+```{r s.2.setup, message=F}
+d <- read.csv(here("Data/Charles.csv"))
+```
+
+### a. 
+``` {r}
+plot(d$Work.Units,d$Cost,xlim=c(0,200),ylim = c(0,900))
+```
+### b.
+```{r}
+out <- 
+  lm(Cost~Work.Units-1,data=d)
+summary(out)
+```
+### c.
+```{r s.2.c}
+plot(d$Work.Units,d$Cost,xlim=c(0,200),ylim = c(0,900))
+abline(out)
+```
+
+Based on the plot above, it is quite clear that the linear model through the origin is appropriate. All of the points seem to fall near the line and they are not off in any systematic way.
+
+### d.
+We can compute exactly the desired confidence interval with the stock `confint()` command:
+```{r s.2.d}
+confint(out)
+```
+
+### e.
+And finally, we can compute the confidence interval in the following way.
+```{r s.2.e }
+data=data.frame(Work.Units=100)
+predict(out,data,level=.9,interval = 'confidence',se.fit=T)
+```
+So we can be $90\%$ confident that mean of the Cost would be between \$462 and \$474 dollars.
