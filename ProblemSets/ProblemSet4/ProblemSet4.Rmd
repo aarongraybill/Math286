@@ -8,9 +8,17 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## Problem 3.1.
 
 ### a.
+```{r 1.a }
+library(here)
+d <- 
+  read.table(here("Data/airfares.txt"),header=T)
+out1 <- 
+  lm(Fare~Distance,data=d)
+```
+The analysis is incomplete.
