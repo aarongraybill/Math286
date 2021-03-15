@@ -37,17 +37,23 @@ d <-
 
 plot(d$x,d$y)
 
-d$y2=(d$y^(1/3))^4
 
 out1 <- 
-  lm(y~x,data=d)
+  lm(y~x+I(x^2),data=d)
 
 out2 <- 
   lm(y^(1/3)~x,data=d)
 
-out3 <- 
-  lm(I(sin(y2^(.478))+1)~x,data=d)
+car::inverseResponsePlot(out1)
+car::inverseResponsePlot(out2)
 
+#to search specific lamda use the following:
 
+temp <- 
+  car::inverseResponsePlot(out1,lambda=seq(-10,10,.01))
 
+plot(temp$lambda[2:2002],temp$RSS[2:2002],type="l")
+
+test <- 
+  MASS::boxcox(out1,seq(1/3-.1,1/3+.1,.01))
 
