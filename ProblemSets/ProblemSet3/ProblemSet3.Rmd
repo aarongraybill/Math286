@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## Problem 2.6
@@ -48,9 +48,11 @@ d <-
 \textbf{I say cost a lot in this question when I mean hours. I realized this during the last part, and I don't have enough time this week to change it, but I at least wanted to recognize the error made.}
 
 The following code plots the Hours against the Size
+
 ``` {r s.1.a}
 plot(d$Size,d$Hours)
 ```
+
 By the plot above a linear model seems okay, although the variance of the errors might be quite high.
 
 ### b.

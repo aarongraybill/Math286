@@ -156,8 +156,50 @@ plot(m1)
 
 detach(production)
 
-cleaning <- read.table("cleaning.txt",header=TRUE)
+## Example 3----
+cleaning <- read.table("Data/cleaning.txt",header=TRUE)
 attach(cleaning)
+
+# a. room is depdendent variable crews is indep
+
+# b.
+plot(cleaning$Crews,cleaning$Rooms)
+#linear model looks okay but non-constant variance
+
+#c. 
+out <- 
+  lm(Rooms~Crews,data=cleaning)
+summary(out)
+
+#d. R^2=85.69
+
+#e. 
+prediction_data <- 
+  data.frame(Crews=c(4,16))
+predict(out,prediction_data,interval = 'prediction')
+
+#f. 
+plot(out)
+#There's a positive slope between residuals and location, so not constant variance
+
+#g.
+out2 <- 
+  lm(sqrt(Rooms)~sqrt(Crews),data=cleaning)
+summary(out2)
+
+#h.
+plot(out2)
+
+#i.
+prediction_data2 <- 
+  data.frame(Crews=c(4,16))
+prediction <- 
+  predict(out2,prediction_data2,interval = 'prediction')
+
+prediction <- 
+  prediction^2
+
+
 
 #Figure 3.15 on page 71
 par(mfrow=c(1,1))
