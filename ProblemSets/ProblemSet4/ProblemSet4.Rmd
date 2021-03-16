@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Problem 3.1.
 
 ### a.
+
 ```{r 1.a }
 library(here)
 d <- 
@@ -21,4 +22,153 @@ d <-
 out1 <- 
   lm(Fare~Distance,data=d)
 ```
-The analysis is incomplete.
+
+The analysis is incomplete. While all of the numbers reported match the regression output, the interpretation should not stated in the way that they was. It is clear from the residuals plot that there is a non-linear relationsihp between the $x$ and $y$ variables because if there was a linear relationship, we would expect there to be no visual relationship between the value of $x$ and the size and direction of residual. However, we see a clear parabolic shape to the residual indicating that the linear model is no suitable for this question. The claim that we can analyze the current effect of distance on fair is not too outlandish because the linear model remains fairly close true values. However, in the future the data might be outside the range currently analyzed which would accentuate the effect of the non-linearity and would make the prediction errors even larger. We cannot forecast for the future values.
+
+### b.
+
+All things considered, the model fits the current data quite well, but the can and should be improved through implementing a non-linear model of $x$ and $y$. The data is not count variables, so a square transformation probably is not the right first step. A log transformation may be appropriate although the plot below shows that the data is not very skewed, so I won't suggest log transformation now.
+
+```{r density plots}
+par(mfrow=c(1,2))
+plot(density(d$Distance))
+plot(density(d$Fare))
+```
+As such the best place to begin might be with an inverse response plot to see if the regression is of the form $Y=g(\beta_0+\beta_1x+e)$.
+
+## Problem 3.3.A
+
+### a.
+```{r read data 3.3}
+d <- 
+  read.csv(here("Data/AdRevenue.csv"))
+```
+
+Before beginning I will explore the data to see if there is a transformation that makes the most sense. I begin with a density plot of the two variables:
+```{r 3.3.a plot}
+par(mfrow=c(1,2))
+plot(density(d$AdRevenue))
+plot(density(d$Circulation))
+```
+
+Both variables are quite skew right, so a log transform is in order. Let's apply that and see if it normalized the two:
+
+```{r 3.3.a compute logs and plot}
+par(mfrow=c(1,2))
+d$log_AdRevenue <- 
+  log(d$AdRevenue)
+d$log_Circulation <- 
+  log(d$Circulation)
+plot(density(d$log_AdRevenue))
+plot(density(d$log_Circulation))
+```
+Okay these variables do look much better, so let's compute the linear model and plot the residuals to ensure they look okay:
+```{r make lm and observe plots}
+out1 <- 
+  lm(log_AdRevenue~log_Circulation,data=d)
+par(mfrow=c(2,2))
+summary(out1)
+plot(out1)
+```
+
+The assumpitions look more or less satistfied with no obvious trends in the plots above.
+
+### b. 
+Since we log transformed the regressor and regressand, we should transform the input and output variables of the prediction interval. By the way this question is asked, it seems like it's not looking for the joint confidence interval, so we can compute in the standard manner.
+
+```{r prediction interval, echo=T}
+prediction_in <- 
+  data.frame(log_Circulation=log(c(.5,20)))
+prediction_out <- 
+  exp(predict(out1,prediction_in,interval="prediction",level=.95))
+knitr::kable(prediction_out)
+```
+Interpreting that table gives that we expect a magazine with half a million readers to attain 74.3 revenue units (thousands of dollars?) with a confidence interval between 51.8 and 106.55. For a magazine with 20 million readers we expect 522.57 units with a lower confidence bound at 359.89 and an upper bound at 758.76.
+
+### c.
+The biggest weakness in the model here is not really understanding the units and having no theoretical basis for the transformation applied. Some other issues are the slight upward trend in the standardized residual plot indicating we are still not at a perfectly linear relationship.
+
+## Problem 3.3.B
+
+### a. 
+Since all of our polynomial regressions will be using the same, untransformed, dependent variable, we can use the $R^2$ of the different polynomial regressions to see which is the best predictor of output. I run regressions of orders 1,2,and 3 below:
+```{r 3.3.B.a make regressions, message=F,results='asis'}
+library(dplyr)
+d <- 
+  d %>% 
+  mutate(Circ=Circulation,
+         Circ2=Circ^2,
+         Circ3=Circ^3)
+out1 <- 
+  lm(AdRevenue~Circ,data=d)
+out2 <- 
+  lm(AdRevenue~Circ+Circ2,data=d)
+out3 <- 
+  lm(AdRevenue~Circ+Circ2+Circ3,data=d)
+
+library(stargazer)
+stargazer(list(out1,out2,out3),header=F)
+```
+The $R^2$ is certainly increasing with every variable, but to be fair the $R^2$ increases with the addition of any variable. The best we can do is to graphically inspect the three plots to see which matches best. Those graphs are:
+```{r 3.3.B.a plot}
+data_in <- 
+  data.frame(Circ=seq(min(d$Circ),max(d$Circ),by=.01))
+data_in <- 
+  data_in %>% 
+  mutate(y_hat_1=
+           out1$coefficients[1]+out1$coefficients[2]*Circ,
+         y_hat_2=
+           out2$coefficients[1]+
+           out2$coefficients[2]*Circ+
+           out2$coefficients[3]*Circ^2,
+         y_hat_3=
+           out3$coefficients[1]+
+           out3$coefficients[2]*Circ+
+           out3$coefficients[3]*Circ^2+
+           out3$coefficients[4]*Circ^3)
+
+plot(d$Circ,d$AdRevenue)
+lines(data_in$Circ,data_in$y_hat_1,col="green")
+lines(data_in$Circ,data_in$y_hat_2,col="red")
+lines(data_in$Circ,data_in$y_hat_3,col="blue")
+```
+Looking at the three models it seems clear that the 3rd order model is the best, but honestly I'm still not super convinced that this is a viable way of comparing models.
+
+### b.
+Now i compute the prediction interval:
+```{r compute prediction intervals 2}
+prediction_in <- 
+  data.frame(Circ=c(.5,20), Circ2=c(.5,20)^2, Circ3=c(.5,20)^3)
+prediction_out <- 
+  predict(out3,prediction_in,interval = "prediction")
+knitr::kable(prediction_out)
+```
+### c. 
+I think this is a bad model, it is heavily leveraged on the $x$ outliers, it doesn't even out the data so things are adequately weighted.
+
+## Problem 3.3.C
+
+### a. 
+Given the choice, I would choose choose the model from part $A$ because it makes an attempt to normalize the data and make the residuals more random. The outliers in model $B$ are given too much leverage.
+
+### b.
+For the reasons above, since I was able to normalize both $X$ and $Y$ I would select those prediction intervals for both cirulation .5 and 20. One reason for 
+this is because the log transformations brings these relatively outlier $X$ values closer to the center so they can be better informed by the data around them and not just one point hanging out by itself. That might not be math though.... Oh! one more thing, we learned in class that prediction intervals are senstive to non-normality, so the non-normality in the $B$ model makes it completely inadequate for prediction intervals.
+
+## Problem 5.
+
+### a.
+No prediction intervals cannot be accurately produced from this data because they are senstive to non-normality. The $Q-Q$ plot shows that the theoretical quantiles are not where they should be if the errors were normally distributed. Furthermore, the dealer cost against the standardized residuals is showing two distinct lines which indicate that normality is violated because the errors are not independent of $X$.
+
+### b.
+To overcome non-normality, we should first look at the initial scatter plot with the regression line. In this we can see that most of the data is clustered in the bottom left (not just in the bottom or left), this indicates that both the dependent and independent variables need log transformation to normalize them.
+
+### c.
+This is a huge improvement in terms of not violating the normality assumptions. The standardized residuals seem to be independent of $x$ and the $Q-Q$ is looking much closer to the theoretical line if the data were normal. We cannot really compare the $R^2$ because the units on the dependent variable have changed.
+
+### d.
+Every 1\% increase in DealerCost is predicted to increase the suggested retail price by 1.01\%.
+
+### e. 
+I'm still seeing some deviations from the theoretical quantiles, but overall the model seems pretty good.
+
