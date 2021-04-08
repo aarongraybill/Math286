@@ -81,9 +81,9 @@ The output above indicates that $p$-value on the one sided $t$-test would be $3.
 Again I don't really think an ancova is the right test for seeing if there has been a significant increase in the percentage of low income students from the 90s to the 2000s. Instead a two sample $t$-test on the sample means is the most appropriate. The results of such a test are as follows:
 
 ```{r t test}
-t.test(d$X.Low.income.students[d$Year==2004],d$X.Low.income.students[d$Year==1994],alternative = "greater")
+t.test(d$X.Repeating.1st.Grade[d$Year==2004],d$X.Repeating.1st.Grade[d$Year==1994],alternative = "greater",paired=T)
 ```
-The test above shows that there is strong evidence ($p=0.0004203$) that the mean percentage of students in poverty increased between 1994 and 2004 (which is pretty devastating).
+The test above shows that there is strong evidence ($p=0.04203$) that the mean percentage of students in poverty increased between 1994 and 2004 (which is pretty devastating).
 
 ### c.
 
