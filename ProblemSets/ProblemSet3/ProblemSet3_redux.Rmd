@@ -1,0 +1,133 @@
+---
+title: "ProblemSet3"
+author: "Aaron Graybill"
+date: "320/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Problem 2.6
+
+### a.
+
+$$
+y_i-\hat{y}_i=y_i-\hat{\beta}_0+\hat{\beta}_1x_i=y_i-\overline{y}-\hat{\beta}_1\overline{x}+\hat{\beta}_1 x_i=(y_i-\overline{y})-\hat{\beta}_1(x_i-\overline{x})
+$$
+
+### b.
+
+$$
+\hat{y}_i-\overline{y}=\hat{\beta}_0+\hat{\beta}_1x_i-\overline{y}=\overline{y}-\hat{\beta}_1\overline{x}+\hat{\beta}_1x_i-\overline{y}=\hat{\beta}_1(x_i-\overline{x})
+$$
+
+### c.
+
+\begin{align*}
+&\sum_{i=1}^n\left(\hat{y}_i-\overline{y}\right)\left(y_i-\hat{y}_i\right)\\
+&\sum_{i=1}^n\left((y_i-\overline{y})-\hat{\beta}_1(x_i-\overline{x})\right)\left(\hat{\beta}_1(x_i-\overline{x})\right)\\
+&\sum_{i=1}^n(y_i-\overline{y})\hat{\beta}_1(x_i-\overline{x})-\hat{\beta}_1^2(x_i-\overline{x})^2\\
+&\hat{\beta}_1SXY-\hat{\beta}_1^2SXX\\
+&\frac{SXY}{SXX}SXY-\left(\frac{SXY}{SXX}\right)^2SXX\\
+&\frac{SXY^2-SXY^2}{SXX}=0
+\end{align*}
+
+## Simultaneous Question 1.
+### a.
+
+```{r read data}
+library(here)
+d <- read.csv(here("Data/gradrate2.csv"))
+out1 <- 
+  lm(AS95~AS94,data=d)
+summary(out1)
+```
+### b.
+Using the Bonferroni method, I find two individual intervals at confidence $.95$ and they together for a joint confidence interval. We have:
+```{r joiint conf}
+confint(out1)
+```
+
+So we are (more than) 90% sure that neither coefficient is zero.
+
+### c.
+We need 95% independent levels for a joint prediction interval when there are two predictions, we have:
+```{r joinit pred int}
+pred_in <- 
+  data.frame(AS94=c(50,53))
+pred_out <- 
+  predict(out1,pred_in,interval = "prediction",level=.95)
+pred_out
+```
+
+
+### d. 
+Since we have 3 intervals, we need a confidence level of $1-\frac{.1}{3}=96.66667\%$
+```{r joinit pred 2}
+pred_in <- 
+  data.frame(AS94=c(48,53,57))
+pred_out <- 
+  predict(out1,pred_in,interval = "prediction",level=.9666667)
+pred_out
+```
+
+## Simultaneous Problem 2.
+
+```{r make data gain}
+
+d2 <- data.frame(Galleys=c(7,12,10,10,14,25,30,25,18,10,4,6),
+                 Cost=c(128,213,191,178,250,446,540,457,324,177,75,107))
+```
+
+### a.
+Here's a regression through the origin:
+```{r reg org}
+out2 <- 
+  lm(Cost~Galleys-1,data=d2)
+summary(out2)
+```
+### b.
+
+```{r plot}
+plot(d2$Galleys,d2$Cost,xlim = c(0,35),ylim=c(0,600))
+abline(out2)
+```
+The relationship looks appropriate, so if we have a theoretical reason for regressing through the origin, this seems like an appropriate model.
+
+### c. 
+Management is essentially asserting that $\beta=17.5$ and we can run a hypothesis to see whether or not the observed data suggests a value significantly different than that. We have:
+
+$$
+H_0\colon \beta=17.5\\
+H_a\colon \beta\neq17.5
+$$
+
+In the last problem set we showed that for a $e_i$ with variance $\sigma^2$, a through-the-origin has $\hat{\beta}\sim\left(\beta,\frac{\sigma^2}{\sum x_i^2}\right)$. So we need to normalize this to $t$-distribution it. We know that: 
+$$
+\frac{\hat{\beta}-\beta}{\frac{S}{\sqrt{\sum x_i^2}}}=\frac{\hat{\beta}-\beta}{se(\hat{\beta})} \sim t_{n-2}
+$$ 
+And doing that I now realize that this is just the standard hypothesis testing. Okay now we have all that we need to run hypothesis testing on $\beta$ 
+I compute the test statistic:
+$$
+\frac{18.02830-17.5}{0.07948}=6.646955
+$$ 
+```{r compute p}
+#left tail
+pt(-6.646955,9)
+
+p_val <- 
+  pt(-6.646955,9)*2
+```
+
+Computing the $p$-value gives: `r p_val` which is well below the $\alpha=.02$ level, which indicates that we reject the null hypothesis that $\beta=17.5$ and accept that it is not equal to $\beta=17.5$. The managers assumption is faulty and likely should be revised.
+
+### d.
+```{r compute pred int 3}
+pred_in <- 
+  data.frame(Galleys=c(10))
+predict(out2,pred_in,interval = "prediction",level=.98)
+```
+
+We estimate the cost of the Job wopuld be between 167 and 192 money units.

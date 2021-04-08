@@ -1,0 +1,147 @@
+---
+title: "ProblemSet7"
+author: "Aaron Graybill"
+date: "4/5/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Problem 1.
+I think it would be wise to start with a simple visualization of how the size of the loan affects the number of days to repayment. That plot is as follows:
+```{r bring and plot data,}
+library(here)
+d <- read.table(here("data/overdue.txt"),header=T)
+d$residential <- TRUE
+d$residential[49:96] <- FALSE
+d$residential <- as.factor(d$residential)
+
+library(ggplot2)
+ggplot(d)+
+  geom_point(aes(x=BILL,y=LATE,col=residential
+                 ))
+```
+
+Well wow! That indicates that we definitely need to treat residential loans differentially. And simply having a different intercept will not suffice either, we will need to use an interaction term. This is nice data!
+
+The table below summarizes the three possible regressions with and without interaction and dummy intercepts. 
+
+```{r create regressions, results='asis'}
+out1 <- 
+  lm(LATE~BILL,data=d)
+out2 <- 
+  lm(LATE~BILL+residential,data=d)
+out3 <- 
+  lm(LATE~BILL*residential,data=d)
+
+stargazer::stargazer(list(out1,out2,out3),header=F)
+```
+
+The output below makes it clear that the full model with the interaction term has the highest adjusted $R^2$, but we can further quantify whether or not the model is adding significant predictive power with a partial $F$ test.
+
+```{r partial f}
+anova(out1,out2)
+anova(out2,out3)
+anova(out1,out3)
+```
+
+The above output shows that in every case, going for the more complicated model adds substantial predictive power. Increasing from the model with no dummies to a dummy intercept is signifcant. Increasing from a model with dummies intercept to dummy interaction is significant. And of course, going from the simplest to the most complicated is also significant. As such we should select the model with the dummy interaction. 
+
+To summarize, we use the following model to predict the lateness of pay given bill size:
+
+$$
+\texttt{LOAN}=\beta_0+\beta_1\texttt{BILL}+\beta_2\texttt{residential}+\beta_3\texttt{residential}\cdot\texttt{BILL}
+$$
+To ensure that this is a suitable choice the diagnostic plots below show that none of the assumptions are flagrantly violated.
+
+```{r diagnostic plots}
+par(mfrow=c(2,2))
+plot(out3)
+```
+## Problem 2.
+
+```{r read data 2}
+d <- read.csv(here("data/HoustonChronicle.csv"))
+```
+
+### a.
+An ancova is inappropriate to decide whether or not an increase in low income percent is associated with an increase in percentage of grade one repeats. Instead a one way $t$-test of the coefficient on the low income students term. 
+
+```{r simple regression}
+out1 <- 
+  lm(X.Repeating.1st.Grade~X.Low.income.students,data=d)
+summary(out1)
+```
+
+The output above indicates that $p$-value on the one sided $t$-test would be $3.24\times 10^{-5}$ which says that an increase ini low income students students is significantly associated with an increase in the percent repeating 1st grade. This, of course, is when we control for no other factors (as the question asks).
+
+### b.
+Again I don't really think an ancova is the right test for seeing if there has been a significant increase in the percentage of low income students from the 90s to the 2000s. Instead a two sample $t$-test on the sample means is the most appropriate. The results of such a test are as follows:
+
+```{r t test}
+t.test(d$X.Low.income.students[d$Year==2004],d$X.Low.income.students[d$Year==1994],alternative = "greater")
+```
+The test above shows that there is strong evidence ($p=0.0004203$) that the mean percentage of students in poverty increased between 1994 and 2004 (which is pretty devastating).
+
+### c.
+
+When it says any association that gives us the freedom to use a fully dummy-with-interaction model to perform the ancova, we will test the simplest baseline model with no year dummy against the model with the intercept and interaction from the year dummy. That ancova output is:
+```{r ancova 2}
+out2 <- 
+  lm(X.Repeating.1st.Grade~X.Low.income.students*as.factor(Year),data = d)
+anova(out1,out2)
+```
+```{r plot relationship}
+ggplot(d)+
+  geom_point(aes(x=X.Low.income.students,y=X.Repeating.1st.Grade,col=as.factor(Year)))
+```
+
+The ancova output above and the corresponding plot indicate that we have insufficient evidence to say that the percentage of low income students has different impact on the percentage of students repeating grade one in 1994 vs 2004. Basically, the relationship between the two seems to be similar across time. The plot seems to echo this fact, although the datasets are in different locations, their slope and intercepts seem to remain the mostly the same.
+
+The headline that the reading standard is too hard seems to be in affected by poverty in mostly the same way to previous years, so the reading standard is likely not to blame.
+
+
+## Problem 3.
+
+```{r read data 3}
+d <- read.table(here("data/latour.txt"),header=T)
+out1 <- 
+  lm(Quality~EndofHarvest*Rain,data=d)
+summary(out1)
+```
+
+The regression output given above shows that the last term, the interaction term, is signifcant at the $5\%$ which implies that unwanted rain at harvest is not a single shock to the quality of the wine and instead affects wines that would have been worse quality more negatively than those that would have been good quality wines. Specifically, if rain happens and the number of days since August 31st is large (bad wines), the interaction term begins to have a large negative effect on the quality.  Whereas for quickly harvested wines, the rain has less of an impact on the quality. One could summarize this with, late rains make worse wines than early rains, holding other factors constant.
+
+```{r plot wine}
+ggplot(d)+
+  geom_point(aes(x=EndofHarvest,y=Quality,col=as.factor(Rain)))
+```
+
+### b.
+
+#### i.
+The equation for no rain at harvest is:
+$$
+\hat{Q}=5.16122-0.03145t
+$$
+Where $\hat{Q}$ is the estimated quality and $t$ is number of days. Therefore, the derivative of $\hat{Q}$ wrt $t$ is $-0.03145$. To compute a one unit decrease in quality, we simply take $\frac{1}{0.03145}$ giving $31.8$ days after August 31st. And by linearity, every 31.8 days after that will decrease quality by another point.
+
+#### ii.
+The equation with rain is:
+$$
+\hat{Q}=(5.16122+1.78670)+(-0.03145-0.08314)t=6.94792-0.11459t
+$$
+
+Computing a one unit decrease in $\hat{Q}$ can be done another way, as follows:
+
+
+\begin{align*}
+-1&=\hat{Q}_t-\hat{Q}_0\\
+&=6.94792-0.11459t-\left(6.94792-0.11459\cdot0\right)\\
+&=-0.11459t
+\end{align*}
+
+
+Solving this gives that $t=8.726765$, so the quality loses one star every $8.73$ days! This is a much faster quality drop off than no-rain grapes.

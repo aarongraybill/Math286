@@ -1,15 +1,33 @@
 #March 17, 2009
 
 #Please change the file path in the command below to coincide with where you have stored the data files
-setwd("C:/Users/sheather.ADSTAT/Documents/docs/AModernApproachToRegression/Data")
 
-cleaningwtd <- read.table("cleaningwtd.txt",header=TRUE)
+
+cleaningwtd <- read.table("Data/cleaningwtd.txt",header=TRUE)
 attach(cleaningwtd)
 
 #Regression output on page 117
+
+# this is doing the weighting for me
 wm1 <- lm(Rooms~Crews,weights=1/StdDev^2)
 summary(wm1)
 predict(wm1,newdata=data.frame(Crews=c(4,16)),interval="prediction",level=0.95)
+
+
+Rooms2 <- Rooms/StdDev
+intercept <- 
+  1/StdDev
+new_x <- 
+  Crews/StdDev
+
+out1 <- 
+  lm(Rooms2~intercept+new_x-1)
+summary(out1)
+  
+
+
+
+
 
 #Regression output on page 120
 ynew <- Rooms/StdDev

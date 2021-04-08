@@ -39,12 +39,14 @@ As such the best place to begin might be with an inverse response plot to see if
 ## Problem 3.3.A
 
 ### a.
+
 ```{r read data 3.3}
 d <- 
   read.csv(here("Data/AdRevenue.csv"))
 ```
 
 Before beginning I will explore the data to see if there is a transformation that makes the most sense. I begin with a density plot of the two variables:
+
 ```{r 3.3.a plot}
 par(mfrow=c(1,2))
 plot(density(d$AdRevenue))
@@ -63,6 +65,7 @@ plot(density(d$log_AdRevenue))
 plot(density(d$log_Circulation))
 ```
 Okay these variables do look much better, so let's compute the linear model and plot the residuals to ensure they look okay:
+
 ```{r make lm and observe plots}
 out1 <- 
   lm(log_AdRevenue~log_Circulation,data=d)
